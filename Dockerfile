@@ -16,5 +16,5 @@ COPY . .
 # Expose port
 EXPOSE 5173
 
-# Run development server
-CMD ["npm", "run", "dev"]
+# Dev server must listen on all interfaces inside the container
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]

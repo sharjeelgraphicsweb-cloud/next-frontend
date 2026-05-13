@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { User, Award, Zap, Calendar, Trophy, Star, Upload, Trash2 } from 'lucide-react'
+import { User, Award, Zap, Calendar, Trophy, Star, Upload, Trash2, Camera } from 'lucide-react'
 import toast from 'react-hot-toast'
 import useAuthStore from '../store/authStore'
 import { gamificationAPI, profileAPI } from '../services/api'
 import { EmptyState, LoadingScreen, PageContainer, PageIntro, SectionCard, StatCard } from '../components/AppShell'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+}
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+}
 
 const ProfilePage = () => {
   useDocumentMeta({
@@ -87,87 +100,109 @@ const ProfilePage = () => {
   return (
     <PageContainer>
       <PageIntro
-        eyebrow="Learner profile"
-        title={user?.name || 'Your profile'}
-        description="Manage your personal details, learning stats, and earned badges from one place."
+        eyebrow="Learner Profile"
+        title="Your Profile"
+        description="Manage your personal details, track your learning stats, and view your earned badges."
       />
 
-      <SectionCard className="mb-8">
-        <div className="grid gap-6 lg:grid-cols-[auto_1fr]">
-          <div className="relative mx-auto lg:mx-0">
-            <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-[var(--brand-sky)] bg-[var(--surface)] text-5xl font-bold text-[var(--brand-blue)]">
-              {user?.avatar ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" /> : user?.name?.charAt(0).toUpperCase()}
-            </div>
-            {uploading ? <div className="absolute inset-0 rounded-full bg-black/25" /> : null}
-          </div>
+      <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="space-y-8">
+        <motion.div variants={fadeUp}>
+          <SectionCard className="relative overflow-hidden border-[var(--brand-blue)]/20">
+            <div className="absolute -top-32 -left-32 w-64 h-64 bg-[var(--brand-blue)] rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none"></div>
 
-          <div>
-            {isEditing ? (
-              <form onSubmit={handleUpdate} className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <input type="text" value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value })} className="input-field" placeholder="Full name" required />
-                  <input type="email" value={formData.email} onChange={(event) => setFormData({ ...formData, email: event.target.value })} className="input-field" placeholder="Email address" required />
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <button type="submit" className="btn-primary">Save Changes</button>
-                  <button type="button" onClick={() => setIsEditing(false)} className="btn-secondary">Cancel</button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <h2 className="text-3xl font-extrabold">{user?.name}</h2>
-                    <p className="mt-2 text-base text-[var(--text-secondary)]">{user?.email}</p>
-                  </div>
-                  <button type="button" onClick={() => setIsEditing(true)} className="btn-secondary">Edit Profile</button>
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <label className="btn-secondary cursor-pointer">
-                    <Upload size={16} />
-                    <span>Upload Avatar</span>
+            <div className="grid gap-8 lg:grid-cols-[auto_1fr] items-start relative z-10">
+              <div className="relative mx-auto lg:mx-0 flex flex-col items-center">
+                <div className="group relative flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 border-[var(--surface-elevated)] bg-[var(--surface-strong)] text-5xl font-bold text-[var(--brand-blue)] shadow-xl">
+                  {user?.avatar ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" /> : user?.name?.charAt(0).toUpperCase()}
+                  
+                  <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity backdrop-blur-sm">
+                    <Camera className="text-white mb-2" size={24} />
                     <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
                   </label>
-                  {user?.avatar ? (
-                    <button type="button" onClick={handleDeleteImage} className="btn-secondary">
-                      <Trash2 size={16} />
-                      <span>Remove Avatar</span>
-                    </button>
-                  ) : null}
+                  {uploading ? <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm"><div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div></div> : null}
                 </div>
-              </>
-            )}
-          </div>
-        </div>
-      </SectionCard>
+                {user?.avatar && !uploading && (
+                  <button type="button" onClick={handleDeleteImage} className="mt-4 text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1 transition-colors">
+                    <Trash2 size={12} /> Remove
+                  </button>
+                )}
+              </div>
 
-      <div className="mb-8 grid gap-5 md:grid-cols-3">
-        <StatCard icon={Zap} label="Total XP" value={stats?.xp || 0} tone="orange" />
-        <StatCard icon={Trophy} label="Current Level" value={stats?.level || 1} tone="blue" />
-        <StatCard icon={Calendar} label="Day Streak" value={stats?.streak || 0} tone="green" />
-      </div>
-
-      <div>
-        <h2 className="mb-5 text-2xl font-bold">Earned badges</h2>
-        {badges.length === 0 ? (
-          <EmptyState icon={Award} title="No badges yet" description="Keep progressing through learning milestones to unlock badges." />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-            {badges.map((badge, index) => (
-              <motion.div key={badge.id} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: index * 0.04 }}>
-                <SectionCard className="h-full text-center">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand-orange)]/14 text-[var(--brand-orange)]">
-                    <Star size={28} />
+              <div className="w-full">
+                {isEditing ? (
+                  <form onSubmit={handleUpdate} className="space-y-5 bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border-soft)]">
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <div>
+                        <label className="block text-xs font-bold text-[var(--text-secondary)] mb-1 uppercase tracking-wider">Full Name</label>
+                        <input type="text" value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value })} className="input-field" placeholder="Full name" required />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[var(--text-secondary)] mb-1 uppercase tracking-wider">Email Address</label>
+                        <input type="email" value={formData.email} onChange={(event) => setFormData({ ...formData, email: event.target.value })} className="input-field" placeholder="Email address" required />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-3 pt-2">
+                      <button type="submit" className="btn-primary">Save Changes</button>
+                      <button type="button" onClick={() => setIsEditing(false)} className="btn-secondary">Cancel</button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border-soft)]">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                      <div>
+                        <h2 className="text-3xl font-extrabold text-[var(--text-primary)]">{user?.name}</h2>
+                        <p className="mt-1 text-base font-medium text-[var(--text-secondary)]">{user?.email}</p>
+                      </div>
+                      <button type="button" onClick={() => setIsEditing(true)} className="btn-secondary text-sm px-4 py-2">
+                        Edit Details
+                      </button>
+                    </div>
                   </div>
-                  <h3 className="mt-4 text-sm font-bold">{badge.name}</h3>
-                  <p className="mt-2 text-xs leading-6 text-[var(--text-secondary)]">{badge.description}</p>
-                </SectionCard>
-              </motion.div>
-            ))}
+                )}
+              </div>
+            </div>
+          </SectionCard>
+        </motion.div>
+
+        <motion.div variants={staggerContainer} className="grid gap-5 md:grid-cols-3">
+          <motion.div variants={fadeUp}>
+            <StatCard icon={Zap} label="Total XP" value={stats?.xp || 0} tone="orange" />
+          </motion.div>
+          <motion.div variants={fadeUp}>
+            <StatCard icon={Trophy} label="Current Level" value={stats?.level || 1} tone="blue" />
+          </motion.div>
+          <motion.div variants={fadeUp}>
+            <StatCard icon={Calendar} label="Day Streak" value={stats?.streak || 0} tone="green" />
+          </motion.div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--brand-orange)] to-[var(--brand-lilac)] flex items-center justify-center text-white shadow-md">
+              <Award size={20} />
+            </div>
+            <h2 className="text-2xl font-bold">Earned Badges</h2>
           </div>
-        )}
-      </div>
+
+          {badges.length === 0 ? (
+            <EmptyState icon={Star} title="No badges yet" description="Keep progressing through your learning roadmap to unlock unique achievement badges." />
+          ) : (
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+              {badges.map((badge) => (
+                <motion.div key={badge.id} variants={fadeUp}>
+                  <div className="group h-full rounded-[1.5rem] border border-[var(--border-soft)] bg-[var(--surface-elevated)] p-6 text-center transition-all hover:-translate-y-2 hover:shadow-xl hover:border-[var(--brand-orange)]/30">
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--surface-strong)] to-[var(--surface)] text-[var(--brand-orange)] shadow-inner group-hover:scale-110 transition-transform duration-300">
+                      <Star size={32} />
+                    </div>
+                    <h3 className="mt-5 text-sm font-extrabold text-[var(--text-primary)]">{badge.name}</h3>
+                    <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">{badge.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </motion.div>
+      </motion.div>
     </PageContainer>
   )
 }

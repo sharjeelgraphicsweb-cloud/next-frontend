@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 export const pageTransition = {
   initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 }
 
 export const PageContainer = ({ children, narrow = false }) => (
@@ -17,8 +17,8 @@ export const PageIntro = ({ eyebrow, title, description, actions }) => (
     <div className="space-y-3">
       {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
       <div className="space-y-2">
-        <h1 className="text-4xl font-extrabold sm:text-5xl">{title}</h1>
-        {description ? <p className="max-w-3xl text-base leading-7 text-[var(--text-secondary)]">{description}</p> : null}
+        <h1 className="text-4xl font-extrabold sm:text-5xl tracking-tight">{title}</h1>
+        {description ? <p className="max-w-3xl text-lg leading-relaxed text-[var(--text-secondary)]">{description}</p> : null}
       </div>
     </div>
     {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
@@ -26,7 +26,14 @@ export const PageIntro = ({ eyebrow, title, description, actions }) => (
 )
 
 export const SectionCard = ({ children, className = '' }) => (
-  <div className={`glass-card ${className}`.trim()}>{children}</div>
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, ease: 'easeOut' }}
+    className={`glass-card ${className}`.trim()}
+  >
+    {children}
+  </motion.div>
 )
 
 export const StatCard = ({ icon: Icon, label, value, tone = 'blue', detail }) => {
@@ -74,46 +81,33 @@ export const LoadingScreen = ({ label = 'Loading content...' }) => (
   </div>
 )
 
-export const AuthShell = ({ title, description, children, asideTitle, asideText, footer }) => (
-  <div className="relative flex min-h-screen items-center px-4 py-8 sm:px-6">
-    <div className="pointer-events-none absolute left-[-5rem] top-20 h-56 w-56 rounded-full bg-[var(--brand-lilac)]/25 blur-3xl" />
-    <div className="pointer-events-none absolute bottom-0 right-[-3rem] h-64 w-64 rounded-full bg-[var(--brand-orange)]/20 blur-3xl" />
-    <div className="page-shell grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-      <motion.div {...pageTransition} className="glass-card flex flex-col justify-between gap-8 rounded-[2rem] p-6 sm:p-8">
-        <div className="space-y-5">
-          <span className="eyebrow">Education workspace</span>
-          <div className="space-y-3">
-            <h1 className="text-4xl font-extrabold sm:text-5xl">{asideTitle}</h1>
-            <p className="text-base leading-8 text-[var(--text-secondary)]">{asideText}</p>
-          </div>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {[
-            ['AI planning', 'Roadmaps based on missing skills and job goals'],
-            ['Multi-language', 'Choose a preparation language and fetch matching videos'],
-            ['Certificates', 'Track progress and unlock shareable completion proof'],
-          ].map(([heading, text]) => (
-            <div key={heading} className="rounded-[1.4rem] border border-[var(--border-soft)] bg-[var(--surface)] p-4">
-              <p className="text-sm font-bold">{heading}</p>
-              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{text}</p>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+export const AuthShell = ({ title, subtitle, children, footer, headerActions }) => (
+  <div className="relative flex min-h-screen flex-col items-center justify-center px-4 py-10 sm:px-6">
+    <div className="pointer-events-none absolute left-1/4 top-24 h-48 w-48 -translate-x-1/2 rounded-full bg-[var(--brand-blue)]/10 blur-3xl" />
+    <div className="pointer-events-none absolute bottom-32 right-1/4 h-40 w-40 rounded-full bg-[var(--brand-lilac)]/15 blur-3xl" />
 
-      <motion.div {...pageTransition} transition={{ delay: 0.08 }} className="glass-card rounded-[2rem] p-6 sm:p-8">
-        <div className="mb-8 space-y-2">
-          <h2 className="text-3xl font-extrabold">{title}</h2>
-          <p className="text-base text-[var(--text-secondary)]">{description}</p>
+    <motion.div {...pageTransition} className="relative w-full max-w-[400px]">
+      <div className="surface-panel rounded-2xl p-8 sm:p-9">
+        <header className="mb-8 flex items-start justify-between gap-4">
+          <Link to="/" className="font-[family-name:var(--font-heading)] text-lg font-semibold tracking-tight text-[var(--text-primary)] hover:text-[var(--brand-blue)]">
+            NextStep
+          </Link>
+          {headerActions ? <div className="flex shrink-0 items-center gap-2">{headerActions}</div> : null}
+        </header>
+
+        <div className="mb-8">
+          <h1 className="font-[family-name:var(--font-heading)] text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-[1.625rem]">
+            {title}
+          </h1>
+          {subtitle ? <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">{subtitle}</p> : null}
         </div>
+
         {children}
+
         {footer ? <div className="mt-8 border-t border-[var(--border-soft)] pt-6">{footer}</div> : null}
-        <div className="mt-6 flex flex-wrap gap-4 border-t border-[var(--border-soft)] pt-5 text-sm font-semibold text-[var(--text-secondary)]">
-          <Link to="/privacy">Privacy</Link>
-          <Link to="/terms">Terms</Link>
-          <Link to="/contact">Contact</Link>
-        </div>
-      </motion.div>
-    </div>
+
+
+      </div>
+    </motion.div>
   </div>
 )

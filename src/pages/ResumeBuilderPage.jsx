@@ -14,6 +14,19 @@ const templateCatalog = [
   { id: 'TEMPL_GLOBAL_PRO', name: 'Global Pro', bestFor: 'General international applications', accent: 'bg-[var(--brand-green)]/15' },
 ]
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+}
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+}
+
 const emptyResumeData = {
   personal_info: {
     full_name: '',
@@ -364,9 +377,10 @@ const ResumeBuilderPage = () => {
         description="Generate ATS-focused resume content from a simple prompt, choose from 5 professional designs, upload a profile photo later, and edit every section before final use."
       />
 
-      <div className="grid gap-6 2xl:grid-cols-[0.82fr_1.18fr]">
-        <div className="space-y-5">
-          <SectionCard>
+      <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="grid gap-6 2xl:grid-cols-[0.82fr_1.18fr]">
+        <div className="space-y-6">
+          <motion.div variants={fadeUp}>
+            <SectionCard>
             <div className="mb-5 flex items-center gap-3">
               <div className="rounded-2xl bg-[var(--brand-orange)]/12 p-3 text-[var(--brand-orange)]">
                 <Sparkles size={20} />
@@ -466,13 +480,17 @@ const ResumeBuilderPage = () => {
               </div>
             )}
           </SectionCard>
+          </motion.div>
         </div>
 
         {!editorState ? (
-          <EmptyState icon={FileText} title="Generate or open a resume" description="Once a resume is generated, you can edit content, upload a photo, and choose a template here." />
+          <motion.div variants={fadeUp}>
+            <EmptyState icon={FileText} title="Generate or open a resume" description="Once a resume is generated, you can edit content, upload a photo, and choose a template here." />
+          </motion.div>
         ) : (
-          <div className="space-y-5">
-            <SectionCard>
+          <div className="space-y-6">
+            <motion.div variants={fadeUp}>
+              <SectionCard>
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <div>
                   <h2 className="text-2xl font-bold">Resume editor</h2>
@@ -541,10 +559,12 @@ const ResumeBuilderPage = () => {
                   />
                 </div>
               </div>
-            </SectionCard>
+              </SectionCard>
+            </motion.div>
 
             {gapAnalysis ? (
-              <SectionCard>
+              <motion.div variants={fadeUp}>
+                <SectionCard>
                 <h2 className="text-2xl font-bold">Detected gaps from uploaded resume</h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
                   <div className="rounded-[1.4rem] bg-[var(--surface)] p-4">
@@ -560,11 +580,13 @@ const ResumeBuilderPage = () => {
                     <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{(gapAnalysis.skill_gaps || []).join(', ') || 'No major gaps detected'}</p>
                   </div>
                 </div>
-              </SectionCard>
+                </SectionCard>
+              </motion.div>
             ) : null}
 
             {editorState?.meta_data?.ats_breakdown ? (
-              <SectionCard>
+              <motion.div variants={fadeUp}>
+                <SectionCard>
                 <div className="mb-4 flex items-center gap-3">
                   <ScanSearch className="text-[var(--brand-blue)]" size={20} />
                   <div>
@@ -586,11 +608,13 @@ const ResumeBuilderPage = () => {
                     </div>
                   ))}
                 </div>
-              </SectionCard>
+                </SectionCard>
+              </motion.div>
             ) : null}
 
             {gapAnalysis && editorState ? (
-              <SectionCard>
+              <motion.div variants={fadeUp}>
+                <SectionCard>
                 <div className="mb-4 flex items-center gap-3">
                   <GitCompareArrows className="text-[var(--brand-orange)]" size={20} />
                   <div>
@@ -639,10 +663,12 @@ const ResumeBuilderPage = () => {
                     </div>
                   </div>
                 </div>
-              </SectionCard>
+                </SectionCard>
+              </motion.div>
             ) : null}
 
-            <SectionCard>
+            <motion.div variants={fadeUp}>
+              <SectionCard>
               <div className="grid gap-5 xl:grid-cols-[auto_1fr]">
                 <div className="mx-auto w-full max-w-[220px]">
                   <div className="flex aspect-[4/5] items-center justify-center overflow-hidden rounded-[1.5rem] border border-[var(--border-soft)] bg-[var(--surface)]">
@@ -743,10 +769,11 @@ const ResumeBuilderPage = () => {
                   </p>
                 </div>
               </div>
-            </SectionCard>
+              </SectionCard>
+            </motion.div>
           </div>
         )}
-      </div>
+      </motion.div>
     </PageContainer>
   )
 }

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Award, Map, Activity, Trash2, UserCog, Search, LayoutDashboard, ShieldCheck, Settings, Database, RefreshCw, TrendingUp, ClipboardCheck } from 'lucide-react'
+import { Users, Award, Map, Activity, Trash2, UserCog, Search, LayoutDashboard, ShieldCheck, Settings, Database, RefreshCw, TrendingUp, ClipboardCheck, Plus, X, BookOpen } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { adminAPI } from '../services/api'
+import { courseService } from '../services/courseApi'
 import { EmptyState, LoadingScreen, PageContainer, PageIntro, SectionCard, StatCard } from '../components/AppShell'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 
@@ -20,12 +21,25 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filtering, setFiltering] = useState(false)
   const [reviews, setReviews] = useState([])
+  const [courses, setCourses] = useState([])
+  const [showCourseForm, setShowCourseForm] = useState(false)
+  const [newCourse, setNewCourse] = useState({ title: '', description: '', category: 'Web Development', level: 'beginner', duration_hours: 0, price: 0, instructor_id: 'admin' })
 
   useEffect(() => {
     fetchAdminData()
     fetchUsers()
     fetchReviews()
+    fetchCourses()
   }, [])
+
+  const fetchCourses = async () => {
+    try {
+      const data = await courseService.getAllCourses();
+      setCourses(Array.isArray(data) ? data : (data.data || []));
+    } catch (error) {
+      toast.error('Failed to load courses')
+    }
+  }
 
   const fetchAdminData = async () => {
     try {
@@ -95,6 +109,29 @@ const AdminDashboard = () => {
       fetchReviews()
     } catch (error) {
       toast.error('Failed to review task')
+    }
+  }
+
+  const handleCreateCourse = async (e) => {
+    e.preventDefault()
+    try {
+      await adminAPI.createCourse(newCourse)
+      toast.success('Course created successfully')
+      setShowCourseForm(false)
+      fetchCourses()
+    } catch (error) {
+      toast.error('Failed to create course')
+    }
+  }
+
+  const handleDeleteCourse = async (id) => {
+    if (!window.confirm('Delete this course permanently?')) return
+    try {
+      await adminAPI.deleteCourse(id)
+      toast.success('Course deleted')
+      fetchCourses()
+    } catch (error) {
+      toast.error('Failed to delete course')
     }
   }
 
@@ -301,12 +338,93 @@ const AdminDashboard = () => {
             </motion.div>
           ) : null}
 
-          {activeTab === 'content' || activeTab === 'settings' ? (
-            <motion.div key="placeholder" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          {activeTab === 'content' ? (
+            <motion.div key="content" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}>
+              <SectionCard>
+                <div className="mb-5 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">Course Management</h2>
+                    <p className="mt-2 text-sm text-[var(--text-secondary)]">Create, update, and manage public courses.</p>
+                  </div>
+                  <button onClick={() => setShowCourseForm(!showCourseForm)} className="btn-primary flex items-center gap-2">
+                    {showCourseForm ? <X size={16} /> : <Plus size={16} />}
+                    {showCourseForm ? 'Cancel' : 'New Course'}
+                  </button>
+                </div>
+
+                <AnimatePresence>
+                  {showCourseForm && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="mb-8 overflow-hidden rounded-[1.4rem] border border-[var(--brand-blue)]/30 bg-[var(--brand-blue)]/5 p-5">
+                      <h3 className="mb-4 text-lg font-bold">Add New Course</h3>
+                      <form onSubmit={handleCreateCourse} className="grid gap-4 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <label className="mb-1 block text-sm font-semibold">Course Title</label>
+                          <input required type="text" className="input-field w-full" value={newCourse.title} onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })} />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="mb-1 block text-sm font-semibold">Description</label>
+                          <textarea required className="input-field w-full min-h-[100px]" value={newCourse.description} onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-semibold">Category</label>
+                          <input required type="text" className="input-field w-full" value={newCourse.category} onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-semibold">Level</label>
+                          <select className="input-field w-full" value={newCourse.level} onChange={(e) => setNewCourse({ ...newCourse, level: e.target.value })}>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-semibold">Duration (Hours)</label>
+                          <input required type="number" min="0" className="input-field w-full" value={newCourse.duration_hours} onChange={(e) => setNewCourse({ ...newCourse, duration_hours: parseInt(e.target.value) })} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-semibold">Price ($)</label>
+                          <input required type="number" min="0" step="0.01" className="input-field w-full" value={newCourse.price} onChange={(e) => setNewCourse({ ...newCourse, price: parseFloat(e.target.value) })} />
+                        </div>
+                        <div className="sm:col-span-2 flex justify-end">
+                          <button type="submit" className="btn-primary">Publish Course</button>
+                        </div>
+                      </form>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {courses.length === 0 ? (
+                  <EmptyState icon={BookOpen} title="No courses available" description="Create your first course to populate the library." />
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {courses.map((course) => (
+                      <div key={course._id} className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface)] p-5 transition-colors hover:border-[var(--brand-blue)]/30">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="rounded-full bg-[var(--brand-blue)]/10 px-3 py-1 text-xs font-bold text-[var(--brand-blue)]">{course.category}</div>
+                          <button onClick={() => handleDeleteCourse(course._id)} className="text-[var(--text-muted)] hover:text-red-500 transition-colors">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <h3 className="font-bold text-lg mb-1">{course.title}</h3>
+                        <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-4">{course.description}</p>
+                        <div className="flex items-center justify-between text-xs font-semibold text-[var(--text-muted)]">
+                          <span>{course.level} • {course.duration_hours}h</span>
+                          <span className="text-[var(--text-primary)]">{course.price > 0 ? `$${course.price}` : 'Free'}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </SectionCard>
+            </motion.div>
+          ) : null}
+
+          {activeTab === 'settings' ? (
+            <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <EmptyState
                 icon={TrendingUp}
                 title="Expansion module"
-                description={`The ${activeTab} module is reserved for the next admin release and will be styled inside the same management shell.`}
+                description="Settings module is reserved for the next admin release."
               />
             </motion.div>
           ) : null}
