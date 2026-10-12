@@ -125,7 +125,11 @@ export const adminAPI = {
   updateRole: (id, role) => api.patch(`/admin/users/${id}/role`, { role }),
   deleteCertificate: (id) => api.delete(`/admin/certificates/${id}`),
   createCourse: (data) => api.post('/admin/courses', data),
+  updateCourse: (id, data) => api.put(`/admin/courses/${id}`, data),
   deleteCourse: (id) => api.delete(`/admin/courses/${id}`),
+  addLesson: (courseId, data) => api.post(`/admin/courses/${courseId}/lessons`, data),
+  updateLesson: (id, data) => api.put(`/admin/lessons/${id}`, data),
+  deleteLesson: (id) => api.delete(`/admin/lessons/${id}`),
 }
 
 // ============ QUIZ APIs ============
