@@ -37,14 +37,12 @@ const LandingPage = () => {
 
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-soft)] bg-[var(--surface)]/80 backdrop-blur-md">
         <div className="page-shell flex items-center justify-between px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand-blue)] to-[var(--brand-charcoal)] text-white font-bold shadow-lg shadow-[var(--brand-blue)]/20">
-              NS
-            </div>
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/nextsteplogo.png" alt="" aria-hidden="true" className="h-10 w-10 object-contain" />
             <div>
               <p className="text-lg font-bold tracking-tight">NextStep AI</p>
             </div>
-          </div>
+          </Link>
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2">
               <ThemeToggle />
@@ -171,7 +169,7 @@ const LandingPage = () => {
       <footer className="border-t border-[var(--border-soft)] bg-[var(--surface)] mt-auto">
         <div className="page-shell py-8 px-4 flex flex-col md:flex-row items-center justify-between text-sm text-[var(--text-secondary)]">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
-            <div className="w-6 h-6 rounded bg-gradient-to-br from-[var(--brand-blue)] to-[var(--brand-charcoal)] text-white flex items-center justify-center text-[10px] font-bold">NS</div>
+            <img src="/nextsteplogo.png" alt="" aria-hidden="true" className="h-8 w-8 object-contain" />
             <p>© {new Date().getFullYear()} NextStep AI. Professional learning.</p>
           </div>
           <div className="flex items-center gap-6 font-medium">

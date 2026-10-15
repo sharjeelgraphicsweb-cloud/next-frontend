@@ -4,7 +4,7 @@ import { Award, Download, Eye, Sparkles, FileType, FileText, X } from 'lucide-re
 import { QRCodeSVG } from 'qrcode.react'
 import toast from 'react-hot-toast'
 import useAuthStore from '../store/authStore'
-import { certificateAPI, roadmapAPI } from '../services/api'
+import { certificateAPI, progressAPI, roadmapAPI } from '../services/api'
 import { EmptyState, LoadingScreen, PageContainer, PageIntro } from '../components/AppShell'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 
@@ -31,6 +31,7 @@ const CertificatesPage = () => {
   const { user } = useAuthStore()
   const [certificates, setCertificates] = useState([])
   const [roadmaps, setRoadmaps] = useState([])
+  const [completedRoadmapIds, setCompletedRoadmapIds] = useState([])
   const [selectedCert, setSelectedCert] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -47,6 +48,22 @@ const CertificatesPage = () => {
 
       setCertificates(Array.isArray(certificatesRaw) ? certificatesRaw : [])
       setRoadmaps(Array.isArray(roadmapsRaw) ? roadmapsRaw : [])
+      const eligibleRoadmaps = await Promise.all((Array.isArray(roadmapsRaw) ? roadmapsRaw : []).map(async (roadmap) => {
+        if (!Array.isArray(roadmap.nodes) || roadmap.nodes.length === 0) return null
+
+        const roadmapId = String(roadmap.id || roadmap._id || '')
+        if (!roadmapId) return null
+
+        const { data } = await progressAPI.getRoadmapProgress(roadmapId)
+        const completedNodeIds = new Set(
+          (Array.isArray(data?.node_progress) ? data.node_progress : [])
+            .filter((node) => node.status === 'completed')
+            .map((node) => String(node.node_id)),
+        )
+        const isComplete = roadmap.nodes.every((node) => completedNodeIds.has(String(node.id)))
+        return isComplete ? roadmapId : null
+      }))
+      setCompletedRoadmapIds(eligibleRoadmaps.filter(Boolean))
     } catch (error) {
       toast.error('Failed to load certificates')
     } finally {
@@ -99,7 +116,10 @@ const CertificatesPage = () => {
     return <LoadingScreen label="Loading certificates..." />
   }
 
-  const availableRoadmaps = roadmaps.filter((roadmap) => !certificates.find((certificate) => String(certificate.roadmap_id) === String(roadmap.id)))
+  const availableRoadmaps = roadmaps.filter((roadmap) =>
+    completedRoadmapIds.includes(String(roadmap.id || roadmap._id)) &&
+    !certificates.find((certificate) => String(certificate.roadmap_id) === String(roadmap.id || roadmap._id)),
+  )
 
   return (
     <PageContainer>
@@ -225,8 +245,8 @@ const CertificatesPage = () => {
                 <div className="absolute -top-32 -right-32 w-96 h-96 bg-[var(--brand-blue)] rounded-full mix-blend-screen filter blur-[100px] opacity-20 pointer-events-none"></div>
                 
                 <div className="rounded-[2rem] border border-white/20 p-8 md:p-12 text-center relative z-10 backdrop-blur-sm bg-black/20">
-                  <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--brand-blue)] to-[var(--brand-charcoal)] flex items-center justify-center text-white mb-6 shadow-xl border border-white/10">
-                    <span className="font-bold tracking-tight">NS</span>
+                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center">
+                    <img src="/nextsteplogo.png" alt="NextStep AI logo" className="h-full w-full object-contain" />
                   </div>
                   
                   <h3 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[var(--brand-cream)] tracking-tight">Certificate of Completion</h3>

@@ -223,11 +223,15 @@ const AnalyzePage = () => {
                     <FileCheck size={16}/> Verified Current Skills
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {analysis.current_skills.map((skill) => (
-                      <span key={skill} className="rounded-full bg-[var(--brand-green)]/15 border border-[var(--brand-green)]/20 px-3 py-1.5 text-sm font-semibold text-[var(--text-primary)] shadow-sm">
-                        {skill}
-                      </span>
-                    ))}
+                    {analysis.current_skills.length ? (
+                      analysis.current_skills.map((skill) => (
+                        <span key={skill} className="rounded-full bg-[var(--brand-green)]/15 border border-[var(--brand-green)]/20 px-3 py-1.5 text-sm font-semibold text-[var(--text-primary)] shadow-sm">
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-sm text-[var(--text-secondary)]">No current skills were identified in the resume.</p>
+                    )}
                   </div>
                 </div>
 
@@ -236,11 +240,15 @@ const AnalyzePage = () => {
                     <Target size={16}/> Identified Skill Gaps
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {analysis.skill_gaps.map((skill) => (
-                      <span key={skill} className="rounded-full bg-[var(--brand-orange)]/15 border border-[var(--brand-orange)]/20 px-3 py-1.5 text-sm font-semibold text-[var(--text-primary)] shadow-sm">
-                        {skill}
-                      </span>
-                    ))}
+                    {analysis.skill_gaps.length ? (
+                      analysis.skill_gaps.map((skill) => (
+                        <span key={skill} className="rounded-full bg-[var(--brand-orange)]/15 border border-[var(--brand-orange)]/20 px-3 py-1.5 text-sm font-semibold text-[var(--text-primary)] shadow-sm">
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-sm text-[var(--text-secondary)]">No skill gaps were identified.</p>
+                    )}
                   </div>
                 </div>
               </div>

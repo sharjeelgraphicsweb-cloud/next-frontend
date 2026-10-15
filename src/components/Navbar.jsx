@@ -36,9 +36,7 @@ const Navbar = () => {
       <div className="page-shell px-4 py-4 sm:px-6">
         <div className="flex items-center justify-between gap-4">
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand-blue)] to-[var(--brand-charcoal)] text-white shadow-md shadow-[var(--brand-blue)]/20">
-              <span className="font-bold text-sm tracking-tight">NS</span>
-            </div>
+            <img src="/nextsteplogo.png" alt="" aria-hidden="true" className="h-10 w-10 object-contain" />
             <p className="font-[var(--font-heading)] text-lg font-bold tracking-tight">NextStep AI</p>
           </Link>
 

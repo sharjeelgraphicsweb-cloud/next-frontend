@@ -89,8 +89,9 @@ export const AuthShell = ({ title, subtitle, children, footer, headerActions }) 
     <motion.div {...pageTransition} className="relative w-full max-w-[400px]">
       <div className="surface-panel rounded-2xl p-8 sm:p-9">
         <header className="mb-8 flex items-start justify-between gap-4">
-          <Link to="/" className="font-[family-name:var(--font-heading)] text-lg font-semibold tracking-tight text-[var(--text-primary)] hover:text-[var(--brand-blue)]">
-            NextStep
+          <Link to="/" className="flex items-center gap-2 font-[family-name:var(--font-heading)] text-lg font-semibold tracking-tight text-[var(--text-primary)] hover:text-[var(--brand-blue)]">
+            <img src="/nextsteplogo.png" alt="" aria-hidden="true" className="h-8 w-8 object-contain" />
+            NextStep AI
           </Link>
           {headerActions ? <div className="flex shrink-0 items-center gap-2">{headerActions}</div> : null}
         </header>

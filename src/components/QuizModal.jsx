@@ -48,12 +48,16 @@ const QuizModal = ({ video, skillName, progressId, nodeId, onClose, onSuccess })
       toast.error('Please answer all questions first!')
       return
     }
+    if (!progressId || nodeId === undefined || nodeId === null || nodeId === '') {
+      toast.error('Start this roadmap before submitting the quiz.')
+      return
+    }
 
     setSubmitting(true)
     try {
       const { data } = await quizAPI.submit({
         quiz_id: quiz.id,
-        answers,
+        answers: quiz.questions.map((_, index) => answers[index]),
         progress_id: progressId,
         node_id: nodeId,
       })

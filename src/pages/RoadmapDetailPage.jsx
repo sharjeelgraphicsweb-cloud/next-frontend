@@ -31,6 +31,7 @@ const RoadmapDetailPage = () => {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showQuizModal, setShowQuizModal] = useState(false)
+  const [quizProgressId, setQuizProgressId] = useState(null)
   const [taskForms, setTaskForms] = useState({})
 
   useDocumentMeta({
@@ -100,6 +101,24 @@ const RoadmapDetailPage = () => {
     } catch (error) {
       toast.error('Failed to start progress')
     }
+  }
+
+  const handleOpenQuiz = async () => {
+    let progressId = currentProgressId
+    if (!progressId) {
+      try {
+        const { data } = await progressAPI.start({ roadmap_id: id })
+        progressId = data?.data?.id
+        if (!progressId) throw new Error('The progress response did not include an ID.')
+        await fetchRoadmap()
+      } catch (error) {
+        toast.error('Failed to start progress')
+        return
+      }
+    }
+
+    setQuizProgressId(progressId)
+    setShowQuizModal(true)
   }
 
   const handleCompleteNode = async (progressId, nodeId) => {
@@ -373,7 +392,7 @@ const RoadmapDetailPage = () => {
                         Quiz passed. This lesson is validated.
                       </div>
                     ) : (
-                      <button type="button" onClick={() => setShowQuizModal(true)} className="btn-primary mt-4 w-full">
+                      <button type="button" onClick={handleOpenQuiz} className="btn-primary mt-4 w-full">
                         <HelpCircle size={16} />
                         <span>Take Assessment Quiz</span>
                       </button>
@@ -426,12 +445,16 @@ const RoadmapDetailPage = () => {
         <QuizModal
           video={selectedVideo}
           skillName={selectedNode.skill_name || selectedNode.skill || selectedNode.title}
-          progressId={progressByNode.get(String(selectedNode.id))?.id || progressByNode.get(String(selectedNode.id))?._id}
+          progressId={quizProgressId || progressByNode.get(String(selectedNode.id))?.id || progressByNode.get(String(selectedNode.id))?._id}
           nodeId={selectedNode.id}
-          onClose={() => setShowQuizModal(false)}
+          onClose={() => {
+            setShowQuizModal(false)
+            setQuizProgressId(null)
+          }}
           onSuccess={() => {
             fetchRoadmap()
             setShowQuizModal(false)
+            setQuizProgressId(null)
           }}
         />
       ) : null}
